@@ -1,15 +1,24 @@
 import nodeMailer from "nodemailer";
 
 export const sendMail = async (Option) => {
+  if (!process.env.EMAIL || !process.env.PASSWORD) {
+    throw new Error("Email credentials are not configured on the server");
+  }
+
   const transporter = nodeMailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
     service: process.env.SMTP_SERVICE,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
     },
   });
+
+  try {
+    await transporter.verify();
+  } catch (err) {
+    console.error("SMTP connection failed:", err.message);
+    throw new Error("Unable to connect to email server. Check SMTP credentials.");
+  }
 
   const mailOptions = {
     from: process.env.EMAIL,
@@ -18,5 +27,11 @@ export const sendMail = async (Option) => {
     text: Option.message,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.messageId);
+  } catch (err) {
+    console.error("Send mail error:", err.message);
+    throw new Error(`Failed to send email: ${err.message}`);
+  }
 };
