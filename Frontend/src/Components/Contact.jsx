@@ -12,13 +12,17 @@ const Contact = () => {
     e.preventDefault();
     setLoading(true);
 
+    const apiBase = import.meta.env.VITE_API_URL || "";
+    const apiUrl = apiBase ? `${apiBase}/mail` : "/mail";
+
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || "http://localhost:4000"}/mail`,
+        apiUrl,
         { name, email, message },
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
+          timeout: 15000,
         },
       );
       setName("");
