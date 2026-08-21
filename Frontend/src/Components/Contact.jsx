@@ -31,7 +31,12 @@ const Contact = () => {
       toast.success(response.data.message || "Message sent successfully");
       setLoading(false);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send message");
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to send message";
+      console.error("Contact form error:", error);
+      toast.error(msg);
       setLoading(false);
     }
   };
