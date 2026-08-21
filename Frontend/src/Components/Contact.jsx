@@ -27,7 +27,7 @@ const Contact = () => {
       toast.success(response.data.message || "Message sent successfully");
       setLoading(false);
     } catch (error) {
-      toast.error(error.response.data.message || "Failed to send message");
+      toast.error(error.response?.data?.message || "Failed to send message");
       setLoading(false);
     }
   };
