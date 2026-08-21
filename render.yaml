@@ -22,11 +22,11 @@ services:
       - key: PASSWORD
         sync: false
 
-  - type: static_site
+  - type: web
     name: gym-frontend
     rootDir: Frontend
-    buildCommand: npm run build
-    staticPublishPath: ./dist
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     envVars:
       - key: VITE_API_URL
         sync: false
