@@ -22,7 +22,7 @@ services:
       - key: PASSWORD
         sync: false
 
-  - type: static
+  - type: static_site
     name: gym-frontend
     rootDir: Frontend
     buildCommand: npm run build
