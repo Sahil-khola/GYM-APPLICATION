@@ -29,6 +29,8 @@ export const sendMail = async (Option) => {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
     },
+    connectionTimeout: 30000,
+    socketTimeout: 30000,
   });
 
   try {
