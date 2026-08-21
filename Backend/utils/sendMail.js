@@ -2,13 +2,29 @@ import nodeMailer from "nodemailer";
 
 export const sendMail = async (Option) => {
   if (!process.env.EMAIL || !process.env.PASSWORD) {
+    console.error("Missing env vars:", {
+      EMAIL: !!process.env.EMAIL,
+      PASSWORD: !!process.env.PASSWORD,
+      SMTP_HOST: process.env.SMTP_HOST,
+      SMTP_SERVICE: process.env.SMTP_SERVICE,
+      SMTP_PORT: process.env.SMTP_PORT,
+      NODE_ENV: process.env.NODE_ENV,
+    });
     throw new Error("Email credentials are not configured on the server");
   }
 
-  const transporter = nodeMailer.createTransport({
-    host :process.env.SMTP_HOST,
+  console.log("SMTP config:", {
+    host: process.env.SMTP_HOST,
     service: process.env.SMTP_SERVICE,
-    port: 465,
+    port: process.env.SMTP_PORT,
+    email: process.env.EMAIL,
+    nodeEnv: process.env.NODE_ENV,
+  });
+
+  const transporter = nodeMailer.createTransport({
+    service: process.env.SMTP_SERVICE,
+    port: Number(process.env.SMTP_PORT) || 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
