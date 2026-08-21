@@ -18,6 +18,10 @@ app.use(
 app.use(express.json());
 app.use(router)
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`http://localhost:${port}`);
