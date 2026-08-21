@@ -22,7 +22,7 @@ const Contact = () => {
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
-          timeout: 15000,
+          timeout: 30000,
         },
       );
       setName("");
