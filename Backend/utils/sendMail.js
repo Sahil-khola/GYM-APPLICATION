@@ -26,6 +26,7 @@ export const sendMail = async (Option) => {
   const transportConfig = {
     port,
     secure: useSecure,
+    family: 4,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
