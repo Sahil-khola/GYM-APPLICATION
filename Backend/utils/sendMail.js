@@ -23,24 +23,28 @@ export const sendMail = async (Option) => {
   const port = Number(process.env.SMTP_PORT) || 465;
   const useSecure = port === 465;
 
-  const transporter = nodeMailer.createTransport({
-    host: process.env.SMTP_HOST,
+  const transportConfig = {
     port,
     secure: useSecure,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
     },
-    connectionTimeout: 30000,
-    socketTimeout: 30000,
-  });
+    connectionTimeout: 10000,
+    socketTimeout: 10000,
+  };
 
-  try {
-    await transporter.verify();
-  } catch (err) {
-    console.error("SMTP connection failed:", err.message);
-    throw new Error("Unable to connect to email server. Check SMTP credentials.");
+  if (process.env.SMTP_HOST) {
+    transportConfig.host = process.env.SMTP_HOST;
+  } else if (process.env.SMTP_SERVICE) {
+    transportConfig.service = process.env.SMTP_SERVICE;
+  } else {
+    throw new Error(
+      "Neither SMTP_HOST nor SMTP_SERVICE is configured. Cannot send email."
+    );
   }
+
+  const transporter = nodeMailer.createTransport(transportConfig);
 
   const mailOptions = {
     from: process.env.EMAIL,
