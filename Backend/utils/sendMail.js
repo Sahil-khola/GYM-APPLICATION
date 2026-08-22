@@ -17,14 +17,16 @@ export const sendMail = async (Option) => {
     host: process.env.SMTP_HOST,
     service: process.env.SMTP_SERVICE,
     port: process.env.SMTP_PORT,
-    email: process.env.EMAIL,
     nodeEnv: process.env.NODE_ENV,
   });
 
+  const port = Number(process.env.SMTP_PORT) || 465;
+  const useSecure = port === 465;
+
   const transporter = nodeMailer.createTransport({
-    service: process.env.SMTP_SERVICE,
-    port: Number(process.env.SMTP_PORT) || 465,
-    secure: true,
+    host: process.env.SMTP_HOST,
+    port,
+    secure: useSecure,
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD,
