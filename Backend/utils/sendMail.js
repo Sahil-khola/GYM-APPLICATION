@@ -13,6 +13,8 @@ export const sendMail = async (Option) => {
     throw new Error("Email credentials are not configured on the server");
   }
 
+  const password = process.env.PASSWORD.replace(/\s+/g, "");
+
   console.log("SMTP config:", {
     host: process.env.SMTP_HOST,
     service: process.env.SMTP_SERVICE,
@@ -20,32 +22,27 @@ export const sendMail = async (Option) => {
     nodeEnv: process.env.NODE_ENV,
   });
 
-  const port = Number(process.env.SMTP_PORT) || 465;
-  const useSecure = port === 465;
-
-  const transportConfig = {
-    port,
-    secure: useSecure,
+  const baseConfig = {
     family: 4,
     auth: {
       user: process.env.EMAIL,
-      pass: process.env.PASSWORD,
+      pass: password,
     },
     connectionTimeout: 10000,
     socketTimeout: 10000,
   };
 
   if (process.env.SMTP_HOST) {
-    transportConfig.host = process.env.SMTP_HOST;
+    baseConfig.host = process.env.SMTP_HOST;
   } else if (process.env.SMTP_SERVICE) {
-    transportConfig.service = process.env.SMTP_SERVICE;
+    baseConfig.service = process.env.SMTP_SERVICE;
   } else {
     throw new Error(
       "Neither SMTP_HOST nor SMTP_SERVICE is configured. Cannot send email."
     );
   }
 
-  const transporter = nodeMailer.createTransport(transportConfig);
+  const primaryPort = Number(process.env.SMTP_PORT) || 465;
 
   const mailOptions = {
     from: process.env.EMAIL,
@@ -54,11 +51,37 @@ export const sendMail = async (Option) => {
     text: Option.message,
   };
 
-  try {
+  const trySendMail = async (config, label) => {
+    const transporter = nodeMailer.createTransport(config);
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.messageId);
+    console.log(`Email sent (${label}):`, info.messageId);
+    return info;
+  };
+
+  const errors = [];
+
+  try {
+    return await trySendMail(
+      { ...baseConfig, port: primaryPort, secure: primaryPort === 465 },
+      "primary"
+    );
   } catch (err) {
-    console.error("Send mail error:", err.message);
-    throw new Error(`Failed to send email: ${err.message}`);
+    console.error(`Send mail error (${primaryPort}):`, err.message);
+    errors.push(`${primaryPort}: ${err.message}`);
   }
+
+  const fallbackPort = 587;
+  try {
+    return await trySendMail(
+      { ...baseConfig, port: fallbackPort, secure: false },
+      "fallback (STARTTLS)"
+    );
+  } catch (err) {
+    console.error(`Send mail error (${fallbackPort}):`, err.message);
+    errors.push(`${fallbackPort}: ${err.message}`);
+  }
+
+  throw new Error(
+    `Failed to send email on ports ${primaryPort} and ${fallbackPort}: ${errors.join("; ")}`
+  );
 };
